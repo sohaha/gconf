@@ -43,7 +43,7 @@ func New(file string, defConfFile ...string) *Confhub {
 	if suffix != "" {
 		core.SetConfigType(suffix)
 	} else {
-		suffix = "yml"
+		suffix = "toml"
 	}
 	if len(defConfFile) > 0 {
 		defConf, err := New(defConfFile[0]).ReadConf()
@@ -55,6 +55,14 @@ func New(file string, defConfFile ...string) *Confhub {
 	}
 	fullpath := zfile.RealPath(path + "/" + name + "." + suffix)
 	return &Confhub{filename: name, filepath: path, filesuffix: suffix, core: core, fullpath: fullpath}
+}
+
+func (c *Confhub) Unmarshal(rawVal interface{}, opts ...viper.DecoderConfigOption) error {
+	return c.core.Unmarshal(rawVal, opts...)
+}
+
+func (c *Confhub) Object() *viper.Viper {
+	return c.core
 }
 
 func (c *Confhub) ReadConf() (data map[string]interface{}, err error) {
