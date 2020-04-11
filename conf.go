@@ -10,19 +10,20 @@ import (
 type Confhub struct {
 	filename   string
 	filepath   string
-	core       *viper.Viper
+	Core       *viper.Viper
 	filesuffix string
 	fullpath   string
 }
 
 func New(file string, defConfFile ...string) *Confhub {
 	var (
-		tmp []string
-		l   int
+		tmp    []string
+		suffix string
+		l      int
+		core   = viper.New()
+		name   = file
+		path   = "./"
 	)
-	name := file
-	path := "./"
-	suffix := ""
 	if strings.Contains(file, "/") {
 		tmp := strings.Split(file, "/")
 		l := len(tmp) - 1
@@ -36,45 +37,43 @@ func New(file string, defConfFile ...string) *Confhub {
 		name = strings.Join(tmp[0:l], ".")
 		suffix = tmp[l]
 	}
-
-	core := viper.New()
+	if suffix == "" {
+		suffix = "toml"
+		core.SetConfigType(suffix)
+	}
+	path = zfile.RealPath(path, true)
 	core.SetConfigName(name)
 	core.AddConfigPath(path)
-	if suffix != "" {
-		core.SetConfigType(suffix)
-	} else {
-		suffix = "toml"
-	}
 	if len(defConfFile) > 0 {
-		defConf, err := New(defConfFile[0]).ReadConf()
+		def := New(defConfFile[0])
+		err := def.Read()
 		if err == nil {
+			defConf := def.GetAll()
 			for k, v := range defConf {
 				core.SetDefault(k, v)
 			}
 		}
 	}
-	fullpath := zfile.RealPath(path + "/" + name + "." + suffix)
-	return &Confhub{filename: name, filepath: path, filesuffix: suffix, core: core, fullpath: fullpath}
+	fullpath := (path + name + "." + suffix)
+	return &Confhub{filename: name, filepath: path, filesuffix: suffix, Core: core, fullpath: fullpath}
 }
 
 func (c *Confhub) Unmarshal(rawVal interface{}, opts ...viper.DecoderConfigOption) error {
-	return c.core.Unmarshal(rawVal, opts...)
+	return c.Core.Unmarshal(rawVal, opts...)
 }
 
-func (c *Confhub) Object() *viper.Viper {
-	return c.core
+func (c *Confhub) SetDefault(key string, value interface{}) {
+	c.Core.SetDefault(key, value)
 }
 
-func (c *Confhub) ReadConf() (data map[string]interface{}, err error) {
-	err = c.core.ReadInConfig()
+func (c *Confhub) Read() (err error) {
+	err = c.Core.ReadInConfig()
 	if err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			// _ = c.core.WriteConfigAs("." + c.filesuffix)
 			return
 		}
-		err = nil
+		err = c.Core.SafeWriteConfig()
 	}
-	data = c.core.AllSettings()
 	return
 }
 
@@ -83,25 +82,25 @@ func (c *Confhub) Exist() bool {
 }
 
 func (c *Confhub) Set(key string, value interface{}) {
-	c.core.Set(key, value)
+	c.Core.Set(key, value)
 }
 
 func (c *Confhub) Get(key string) (value interface{}) {
-	return c.core.Get(key)
+	return c.Core.Get(key)
 }
 
 func (c *Confhub) ConfigChange(fn func(e fsnotify.Event)) {
-	c.core.WatchConfig()
-	c.core.OnConfigChange(fn)
+	c.Core.WatchConfig()
+	c.Core.OnConfigChange(fn)
 }
 
 func (c *Confhub) GetAll() map[string]interface{} {
-	return c.core.AllSettings()
+	return c.Core.AllSettings()
 }
 
-func (c *Confhub) WriteConf(filepath ...string) error {
+func (c *Confhub) Write(filepath ...string) error {
 	if len(filepath) > 0 {
-		return c.core.WriteConfigAs(filepath[0])
+		return c.Core.WriteConfigAs(filepath[0])
 	}
-	return c.core.WriteConfigAs(c.fullpath)
+	return c.Core.WriteConfigAs(c.fullpath)
 }
