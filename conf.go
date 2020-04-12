@@ -19,23 +19,23 @@ func New(file string, defConfFile ...string) *Confhub {
 	var (
 		tmp    []string
 		suffix string
-		l      int
+		tmpLen int
 		core   = viper.New()
 		name   = file
 		path   = "./"
 	)
 	if strings.Contains(file, "/") {
 		tmp := strings.Split(file, "/")
-		l := len(tmp) - 1
-		path = strings.Join(tmp[0:l], "/")
-		name = tmp[l]
+		tmpLen = len(tmp) - 1
+		path = strings.Join(tmp[0:tmpLen], "/")
+		name = tmp[tmpLen]
 	}
 
 	tmp = strings.Split(name, ".")
-	l = len(tmp) - 1
-	if l >= 1 {
-		name = strings.Join(tmp[0:l], ".")
-		suffix = tmp[l]
+	tmpLen = len(tmp) - 1
+	if tmpLen >= 1 {
+		name = strings.Join(tmp[0:tmpLen], ".")
+		suffix = tmp[tmpLen]
 	}
 	if suffix == "" {
 		suffix = "toml"
@@ -72,7 +72,10 @@ func (c *Confhub) Read() (err error) {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
 			return
 		}
-		err = c.Core.SafeWriteConfig()
+		data := c.Core.AllKeys()
+		if len(data) > 0 {
+			err = c.Core.SafeWriteConfig()
+		}
 	}
 	return
 }
