@@ -1,10 +1,11 @@
-package go_conf
+package gconf
 
 import (
+	"strings"
+
 	"github.com/fsnotify/fsnotify"
 	"github.com/sohaha/zlsgo/zfile"
 	"github.com/spf13/viper"
-	"strings"
 )
 
 type Confhub struct {

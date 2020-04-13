@@ -1,4 +1,4 @@
-package go_conf_test
+package gconf_test
 
 import (
 	"github.com/sohaha/go_conf"
