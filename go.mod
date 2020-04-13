@@ -1,4 +1,4 @@
-module github.com/sohaha/go_conf
+module github.com/sohaha/gconf
 
 go 1.13
 
