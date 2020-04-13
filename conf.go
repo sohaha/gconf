@@ -40,8 +40,8 @@ func New(file string, defConfFile ...string) *Confhub {
 	}
 	if suffix == "" {
 		suffix = "toml"
-		core.SetConfigType(suffix)
 	}
+	core.SetConfigType(suffix)
 	path = zfile.RealPath(path, true)
 	core.SetConfigName(name)
 	core.AddConfigPath(path)
