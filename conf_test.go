@@ -1,7 +1,7 @@
 package gconf_test
 
 import (
-	"github.com/sohaha/go_conf"
+	"github.com/sohaha/gconf"
 	"github.com/sohaha/zlsgo"
 	"os"
 	"testing"
