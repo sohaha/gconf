@@ -39,7 +39,7 @@ func New(file string, defConfFile ...string) *Confhub {
 		suffix = tmp[tmpLen]
 	}
 	if suffix == "" {
-		suffix = "toml"
+		suffix = "yaml"
 	}
 	core.SetConfigType(suffix)
 	path = zfile.RealPath(path, true)
